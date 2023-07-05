@@ -1,0 +1,18 @@
+version: "3.7"
+
+services:
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    environment:
+      MYSQL_ROOT_PASSWORD: gtranslate
+    networks:
+      - gtranslate_external
+
+networks:
+  pf_external:
+    name: gtranslate_external

@@ -1,0 +1,23 @@
+version: "3.7"
+
+services:
+  gtranslate_worker:
+    build:
+      context: ../../..
+      dockerfile: ./Dockerfile
+    volumes:
+      - ../../../:/src/gtranslate:rw
+    ports:
+      - "8000:8000"
+    environment:
+      WAIT_HOSTS: mysql:3306
+      test: coverage run -m pytest -vv -c ./setup.cfg
+      makemigrations: alembic revision --autogenerate
+      migrate: alembic upgrade head
+      lint: pipenv run lint
+    networks:
+      - gtranslate_external
+
+networks:
+  gtranslate_external:
+    name: gtranslate_external

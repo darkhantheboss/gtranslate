@@ -1,0 +1,36 @@
+version: "3.7"
+
+services:
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    environment:
+      MYSQL_ROOT_PASSWORD: gtranslate
+    networks:
+      - gtranslate_external
+
+  gtranslate_worker:
+    build:
+      dockerfile: ./Dockerfile
+    depends_on:
+      - mysql
+    volumes:
+      - ./:/src/gtranslate:rw
+    ports:
+      - "8000:8000"
+    environment:
+      WAIT_HOSTS: mysql:3306
+      test: coverage run -m pytest -vv -c ./setup.cfg
+      makemigrations: alembic revision --autogenerate
+      migrate: alembic upgrade head
+      lint: pipenv run lint
+    networks:
+      - gtranslate_external
+
+networks:
+  gtranslate_external:
+    name: gtranslate_external
